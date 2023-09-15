@@ -67,8 +67,12 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
 
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
-        scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        if #available(iOS 11.0, *) {
+            scrollView.contentInsetAdjustmentBehavior = .never
+        } else {
+            automaticallyAdjustsScrollViewInsets = false
+        }
         scrollView.delegate = self
         scrollView.isPagingEnabled = true
         view.addSubview(scrollView)
