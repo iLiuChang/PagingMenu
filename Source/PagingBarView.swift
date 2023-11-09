@@ -1,5 +1,5 @@
 //
-//  PagingMenuView.swift
+//  PagingBarView.swift
 //  PagingMenu
 //
 //  Created by LC on 2023/9/15.
@@ -7,18 +7,20 @@
 
 import UIKit
 
-public protocol PagingMenuViewDelegate: AnyObject {
-    func pagingMenuView(_ pageMenu: PagingMenuView, didSelectAt index: Int)
+public protocol PagingBarViewDelegate: AnyObject {
+    func pagingBarView(_ pageMenu: PagingBarView, didSelectAt index: Int)
 }
 
 private let PagingMenuStartTag = 100
 
-public class PagingMenuView: UIView {
+public class PagingBarView: UIView {
 
-    public weak var delegate: PagingMenuViewDelegate?
+    public weak var delegate: PagingBarViewDelegate?
+    /// spacing between items.
     public var spacing: CGFloat = 15
     public var normalStyle:PagingBarItemStyle?
     public var selectedStyle:PagingBarItemStyle?
+    /// after setting, the frame is equal to the frame of the currently selected item.
     public var selectedBackgroundView: UIView? {
         didSet {
             selectedBackgroundView?.removeFromSuperview()
@@ -29,9 +31,9 @@ public class PagingMenuView: UIView {
         }
     }
 
-    public var isAlignCenter = false {
+    public var contentCenter = false {
         didSet {
-            if isAlignCenter {
+            if contentCenter {
                 leftConstraint?.isActive = false
                 centerConstraint?.isActive = true
                 rightConstraint?.isActive = false
@@ -181,7 +183,7 @@ public class PagingMenuView: UIView {
     
     @objc private func selectAction(button: UIButton) {
         if selectedButton(button: button) {
-            delegate?.pagingMenuView(self, didSelectAt: button.tag-PagingMenuStartTag)
+            delegate?.pagingBarView(self, didSelectAt: button.tag-PagingMenuStartTag)
         }
     }
 

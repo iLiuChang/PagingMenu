@@ -14,7 +14,7 @@
 		28A6C8062AB44A5600DAD488 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 28A6C8052AB44A5600DAD488 /* Assets.xcassets */; };
 		28A6C8092AB44A5600DAD488 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 28A6C8072AB44A5600DAD488 /* LaunchScreen.storyboard */; };
 		28A6C8122AB44ADE00DAD488 /* PagingBarItemProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A6C8112AB44ADE00DAD488 /* PagingBarItemProvider.swift */; };
-		28A6C8142AB44B7700DAD488 /* PagingMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A6C8132AB44B7700DAD488 /* PagingMenuView.swift */; };
+		28A6C8142AB44B7700DAD488 /* PagingBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A6C8132AB44B7700DAD488 /* PagingBarView.swift */; };
 		28A6C8162AB44BAB00DAD488 /* PagingMenuController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A6C8152AB44BAB00DAD488 /* PagingMenuController.swift */; };
 		28E06B1E2AFBA3DF00D19F81 /* PagingContainerItemProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E06B1D2AFBA3DF00D19F81 /* PagingContainerItemProvider.swift */; };
 /* End PBXBuildFile section */
@@ -29,7 +29,7 @@
 		28A6C8082AB44A5600DAD488 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		28A6C80A2AB44A5600DAD488 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		28A6C8112AB44ADE00DAD488 /* PagingBarItemProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingBarItemProvider.swift; sourceTree = "<group>"; };
-		28A6C8132AB44B7700DAD488 /* PagingMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingMenuView.swift; sourceTree = "<group>"; };
+		28A6C8132AB44B7700DAD488 /* PagingBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingBarView.swift; sourceTree = "<group>"; };
 		28A6C8152AB44BAB00DAD488 /* PagingMenuController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingMenuController.swift; sourceTree = "<group>"; };
 		28E06B1D2AFBA3DF00D19F81 /* PagingContainerItemProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PagingContainerItemProvider.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -81,7 +81,7 @@
 			children = (
 				28A6C8112AB44ADE00DAD488 /* PagingBarItemProvider.swift */,
 				28E06B1D2AFBA3DF00D19F81 /* PagingContainerItemProvider.swift */,
-				28A6C8132AB44B7700DAD488 /* PagingMenuView.swift */,
+				28A6C8132AB44B7700DAD488 /* PagingBarView.swift */,
 				28A6C8152AB44BAB00DAD488 /* PagingMenuController.swift */,
 			);
 			path = Source;
@@ -164,7 +164,7 @@
 				28A6C7FF2AB44A5400DAD488 /* SceneDelegate.swift in Sources */,
 				28A6C8122AB44ADE00DAD488 /* PagingBarItemProvider.swift in Sources */,
 				28A6C8162AB44BAB00DAD488 /* PagingMenuController.swift in Sources */,
-				28A6C8142AB44B7700DAD488 /* PagingMenuView.swift in Sources */,
+				28A6C8142AB44B7700DAD488 /* PagingBarView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

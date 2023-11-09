@@ -12,46 +12,51 @@ public protocol PagingMenuControllerDelegate: AnyObject {
 }
 
 
-public class PagingMenuController: UIViewController, UIScrollViewDelegate, PagingMenuViewDelegate {
+public class PagingMenuController: UIViewController, UIScrollViewDelegate, PagingBarViewDelegate {
     
-    public var menuHeight: CGFloat = 44
+    /// bar height
+    public var barHeight: CGFloat = 44
     public weak var deledate: PagingMenuControllerDelegate?
-    public var itemSpacing: CGFloat { get { menuView.spacing } set { menuView.spacing = newValue } }
-    public var menuInset = UIEdgeInsets.zero
-    public var normalStyle:PagingBarItemStyle? { get { menuView.normalStyle } set { menuView.normalStyle = newValue } }
-    public var selectedStyle:PagingBarItemStyle? { get { menuView.selectedStyle } set { menuView.selectedStyle = newValue } }
-    public var menuAlignCenter: Bool { get { menuView.isAlignCenter } set { menuView.isAlignCenter = newValue } }
+    /// spacing between the bar items. default is 15
+    public var barItemSpacing: CGFloat { get { barView.spacing } set { barView.spacing = newValue } }
+    public var barInset = UIEdgeInsets.zero
+    public var barItemNormalStyle:PagingBarItemStyle? { get { barView.normalStyle } set { barView.normalStyle = newValue } }
+    public var barItemSelectedStyle:PagingBarItemStyle? { get { barView.selectedStyle } set { barView.selectedStyle = newValue } }
+    /// whether the overall content is centered
+    public var barContentCenter: Bool { get { barView.contentCenter } set { barView.contentCenter = newValue } }
+    /// $0.0: can use `PagingBarItemTitle`,`PagingBarItemAttributedTitle`,`String`. You can also use `PagingBarItemProvider` to customize
+    /// $0.1: can use `UIViewController`,`UIView`. You can also use `PagingContainerItemProvider` to customize
     public var items: ([PagingBarItemProvider],[PagingContainerItemProvider])? {
         didSet {
-            oldValue?.1.forEach({ vc in
-                vc.removeFromSuper()
-            })
-            
-            menuView.items = items?.0
+            oldValue?.1.forEach({  $0.removeFromSuper() })
+            barView.items = items?.0
             if let w = contentWidth {
                 NSLayoutConstraint.deactivate([w])
                 contentWidth = contentView.widthAnchor.constraint(equalTo: view.widthAnchor ,multiplier: CGFloat(items?.1.count ?? 1))
                 contentWidth?.isActive = true
                 scrollView.contentOffset = .zero
             }
+            showSelectedViewController(selectedIndex)
         }
     }
     public var selectedIndex: Int {
         get {
-            menuView.selectedIndex
+            barView.selectedIndex
         }
         set {
-            menuView.setSelectedIndex(newValue, animated: false)
+            barView.setSelectedIndex(newValue, animated: false)
             showSelectedViewController(newValue)
             scrollView.setContentOffset(CGPoint(x: scrollView.frame.width * CGFloat(newValue), y: 0), animated: false)
         }
     }
-    public var selectedBackgroundView: UIView? {
-        get { menuView.selectedBackgroundView }
-        set { menuView.selectedBackgroundView = newValue }
+
+    /// after setting, the frame is equal to the frame of the currently selected bar item.
+    public var barItemSelectedBackgroundView: UIView? {
+        get { barView.selectedBackgroundView }
+        set { barView.selectedBackgroundView = newValue }
     }
 
-    private let menuView = PagingMenuView()
+    private let barView = PagingBarView()
     private let scrollView = UIScrollView()
     private let contentView = UIView()
     private var contentWidth: NSLayoutConstraint?
@@ -60,14 +65,14 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     public override func viewDidLoad() {
         super.viewDidLoad()
         
-        menuView.delegate = self
-        menuView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(menuView)
+        barView.delegate = self
+        barView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(barView)
         NSLayoutConstraint.activate([
-            menuView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -menuInset.right),
-            menuView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: menuInset.left),
-            menuView.topAnchor.constraint(equalTo: view.topAnchor, constant: menuInset.top),
-            menuView.heightAnchor.constraint(equalToConstant: menuHeight)
+            barView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -barInset.right),
+            barView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: barInset.left),
+            barView.topAnchor.constraint(equalTo: view.topAnchor, constant: barInset.top),
+            barView.heightAnchor.constraint(equalToConstant: barHeight)
         ])
 
         scrollView.showsVerticalScrollIndicator = false
@@ -84,7 +89,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
         NSLayoutConstraint.activate([
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            scrollView.topAnchor.constraint(equalTo: menuView.bottomAnchor, constant: menuInset.bottom),
+            scrollView.topAnchor.constraint(equalTo: barView.bottomAnchor, constant: barInset.bottom),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
         
@@ -102,10 +107,10 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     }
 
     public func updateItem(_ item: PagingBarItemProvider, at index: Int) {
-        menuView.updateItem(item, at: index)
+        barView.updateItem(item, at: index)
     }
     
-    public func pagingMenuView(_ pageMenu: PagingMenuView, didSelectAt index: Int) {
+    public func pagingBarView(_ pageMenu: PagingBarView, didSelectAt index: Int) {
         scrollView.setContentOffset(CGPoint(x: scrollView.frame.width * CGFloat(index), y: 0), animated: false)
         showSelectedViewController(index)
     }
@@ -134,7 +139,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     }
     
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        menuView.setSelectedIndex(Int(scrollView.contentOffset.x/scrollView.bounds.width), animated: true)
-        showSelectedViewController(menuView.selectedIndex)
+        barView.setSelectedIndex(Int(scrollView.contentOffset.x/scrollView.bounds.width), animated: true)
+        showSelectedViewController(barView.selectedIndex)
     }
 }
