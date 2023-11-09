@@ -104,6 +104,10 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
             contentWidth!
         ])
         showSelectedViewController(selectedIndex)
+        if UIView.appearance().semanticContentAttribute == .forceRightToLeft {
+            scrollView.transform = CGAffineTransform(scaleX:-1,y: 1)
+            contentView.transform = CGAffineTransform(scaleX:-1,y: 1)
+        }
     }
 
     public func updateItem(_ item: PagingBarItemProvider, at index: Int) {

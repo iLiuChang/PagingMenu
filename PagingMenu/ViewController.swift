@@ -11,11 +11,20 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        let view1 = UIView()
+        
+//        UIView.appearance().semanticContentAttribute = .forceRightToLeft
+        
+        let view1 = UILabel()
+        view1.textAlignment = .center
+        view1.text = "text1"
         view1.backgroundColor = .red
-        let view2 = UIView()
+        let view2 = UILabel()
+        view2.textAlignment = .center
+        view2.text = "text2"
         view2.backgroundColor = .yellow
-        let view3 = UIView()
+        let view3 = UILabel()
+        view3.textAlignment = .center
+        view3.text = "text3"
         view3.backgroundColor = .orange
 
         let selectView = UIView()
