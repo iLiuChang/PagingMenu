@@ -28,7 +28,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     /// $0.1: can use `UIViewController`,`UIView`. You can also use `PagingContainerItemProvider` to customize
     public var items: ([PagingBarItemProvider],[PagingContainerItemProvider])? {
         didSet {
-            oldValue?.1.forEach({  $0.removeFromSuper() })
+            oldValue?.1.forEach({  $0.removeFromSuper(self) })
             barView.items = items?.0
             if let w = contentWidth {
                 NSLayoutConstraint.deactivate([w])
@@ -128,14 +128,14 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
         }
 
         let selectedController = vcs[selectedIndex]
-        if selectedController.container.superview == nil {
+        if selectedController.pagingContainerItemView.superview == nil {
             selectedController.addToSuper(contentView, pagingMenuController: self)
-            selectedController.container.translatesAutoresizingMaskIntoConstraints = false
+            selectedController.pagingContainerItemView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-                selectedController.container.widthAnchor.constraint(equalTo: view.widthAnchor),
-                selectedController.container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: width * CGFloat(selectedIndex)),
-                selectedController.container.topAnchor.constraint(equalTo: contentView.topAnchor),
-                selectedController.container.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                selectedController.pagingContainerItemView.widthAnchor.constraint(equalTo: view.widthAnchor),
+                selectedController.pagingContainerItemView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: width * CGFloat(selectedIndex)),
+                selectedController.pagingContainerItemView.topAnchor.constraint(equalTo: contentView.topAnchor),
+                selectedController.pagingContainerItemView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             ])
 
         }

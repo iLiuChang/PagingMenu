@@ -8,13 +8,13 @@
 import UIKit
 
 public protocol PagingContainerItemProvider {
-    var container: UIView { get }
+    var pagingContainerItemView: UIView { get }
     func addToSuper(_ superView: UIView, pagingMenuController: PagingMenuController)
-    func removeFromSuper()
+    func removeFromSuper(_ pagingMenuController: PagingMenuController)
 }
 
 extension UIViewController: PagingContainerItemProvider {
-    public var container: UIView {
+    public var pagingContainerItemView: UIView {
         view
     }
     
@@ -24,14 +24,14 @@ extension UIViewController: PagingContainerItemProvider {
         pagingMenuController.didMove(toParent: self)
     }
     
-    public func removeFromSuper() {
+    public func removeFromSuper(_ pagingMenuController: PagingMenuController) {
         removeFromParent()
         view.removeFromSuperview()
     }
 }
 
 extension UIView: PagingContainerItemProvider {
-    public var container: UIView {
+    public var pagingContainerItemView: UIView {
         self
     }
     
@@ -39,7 +39,7 @@ extension UIView: PagingContainerItemProvider {
         superView.addSubview(self)
     }
     
-    public func removeFromSuper() {
+    public func removeFromSuper(_ pagingMenuController: PagingMenuController) {
         removeFromSuperview()
     }
 }
