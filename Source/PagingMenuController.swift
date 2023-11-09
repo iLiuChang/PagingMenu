@@ -11,21 +11,22 @@ public protocol PagingMenuControllerDelegate: AnyObject {
     func pagingMenuController(_ pagingMenuController: PagingMenuController, didSelectAt index: Int)
 }
 
+
 public class PagingMenuController: UIViewController, UIScrollViewDelegate, PagingMenuViewDelegate {
-   
+    
     public var menuHeight: CGFloat = 44
     public weak var deledate: PagingMenuControllerDelegate?
     public var itemSpacing: CGFloat { get { menuView.spacing } set { menuView.spacing = newValue } }
     public var menuInset = UIEdgeInsets.zero
-    public var normalStyle:PagingItemStyle? { get { menuView.normalStyle } set { menuView.normalStyle = newValue } }
-    public var selectedStyle:PagingItemStyle? { get { menuView.selectedStyle } set { menuView.selectedStyle = newValue } }
+    public var normalStyle:PagingBarItemStyle? { get { menuView.normalStyle } set { menuView.normalStyle = newValue } }
+    public var selectedStyle:PagingBarItemStyle? { get { menuView.selectedStyle } set { menuView.selectedStyle = newValue } }
     public var menuAlignCenter: Bool { get { menuView.isAlignCenter } set { menuView.isAlignCenter = newValue } }
-    public var items: ([PagingItemProvider],[UIViewController])? {
+    public var items: ([PagingBarItemProvider],[PagingContainerItemProvider])? {
         didSet {
             oldValue?.1.forEach({ vc in
-                vc.removeFromParent()
-                vc.view.removeFromSuperview()
+                vc.removeFromSuper()
             })
+            
             menuView.items = items?.0
             if let w = contentWidth {
                 NSLayoutConstraint.deactivate([w])
@@ -44,6 +45,10 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
             showSelectedViewController(newValue)
             scrollView.setContentOffset(CGPoint(x: scrollView.frame.width * CGFloat(newValue), y: 0), animated: false)
         }
+    }
+    public var selectedBackgroundView: UIView? {
+        get { menuView.selectedBackgroundView }
+        set { menuView.selectedBackgroundView = newValue }
     }
 
     private let menuView = PagingMenuView()
@@ -93,10 +98,10 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentWidth!
         ])
-        showSelectedViewController(0)
+        showSelectedViewController(selectedIndex)
     }
 
-    public func updateItem(_ item: PagingItemProvider, at index: Int) {
+    public func updateItem(_ item: PagingBarItemProvider, at index: Int) {
         menuView.updateItem(item, at: index)
     }
     
@@ -107,24 +112,21 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     
     private func showSelectedViewController(_ selectedIndex: Int) {
         
-        let lak_width = scrollView.bounds.width
+        let width = scrollView.bounds.width
 
-        guard let lak_vcs = items?.1 else {
+        guard let vcs = items?.1 else {
             return
         }
 
-        let lak_selectedController = lak_vcs[selectedIndex]
-
-        if !children.contains(lak_selectedController) {
-            addChild(lak_selectedController)
-            contentView.addSubview(lak_selectedController.view)
-            didMove(toParent: lak_selectedController)
-            lak_selectedController.view.translatesAutoresizingMaskIntoConstraints = false
+        let selectedController = vcs[selectedIndex]
+        if selectedController.container.superview == nil {
+            selectedController.addToSuper(contentView, pagingMenuController: self)
+            selectedController.container.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
-                lak_selectedController.view.widthAnchor.constraint(equalTo: view.widthAnchor),
-                lak_selectedController.view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: lak_width * CGFloat(selectedIndex)),
-                lak_selectedController.view.topAnchor.constraint(equalTo: contentView.topAnchor),
-                lak_selectedController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                selectedController.container.widthAnchor.constraint(equalTo: view.widthAnchor),
+                selectedController.container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: width * CGFloat(selectedIndex)),
+                selectedController.container.topAnchor.constraint(equalTo: contentView.topAnchor),
+                selectedController.container.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             ])
 
         }

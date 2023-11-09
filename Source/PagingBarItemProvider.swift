@@ -1,5 +1,5 @@
 //
-//  PagingItemProvider.swift
+//  PagingBarItemProvider.swift
 //  PagingMenu
 //
 //  Created by LC on 2023/9/15.
@@ -7,17 +7,17 @@
 
 import UIKit
 
-public protocol PagingItemProvider {
+public protocol PagingBarItemProvider {
     var normalAttributedTitle: NSAttributedString { get }
     var selectedAttributedTitle: NSAttributedString { get }
 }
 
-public struct PagingItemStyle {
+public struct PagingBarItemStyle {
     public var color: UIColor
     public var font: UIFont
 }
 
-public struct PagingItemTitle: PagingItemProvider {
+public struct PagingBarItemTitle: PagingBarItemProvider {
     public var normal: String
     public var select: String
     
@@ -30,7 +30,7 @@ public struct PagingItemTitle: PagingItemProvider {
     }
 }
 
-public struct PagingItemAttributedTitle: PagingItemProvider {
+public struct PagingBarItemAttributedTitle: PagingBarItemProvider {
     public var normal: NSAttributedString
     public var select: NSAttributedString
     
@@ -44,7 +44,7 @@ public struct PagingItemAttributedTitle: PagingItemProvider {
 }
 
 
-extension String: PagingItemProvider {
+extension String: PagingBarItemProvider {
     public var normalAttributedTitle: NSAttributedString {
         return NSAttributedString(string: self)
     }

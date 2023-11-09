@@ -16,9 +16,19 @@ private let PagingMenuStartTag = 100
 public class PagingMenuView: UIView {
 
     public weak var delegate: PagingMenuViewDelegate?
-    public var spacing: CGFloat = 0
-    public var normalStyle:PagingItemStyle?
-    public var selectedStyle:PagingItemStyle?
+    public var spacing: CGFloat = 15
+    public var normalStyle:PagingBarItemStyle?
+    public var selectedStyle:PagingBarItemStyle?
+    public var selectedBackgroundView: UIView? {
+        didSet {
+            selectedBackgroundView?.removeFromSuperview()
+            if let bg = selectedBackgroundView {
+                bg.translatesAutoresizingMaskIntoConstraints = false
+                contentView.insertSubview(bg, at: 0)
+            }
+        }
+    }
+
     public var isAlignCenter = false {
         didSet {
             if isAlignCenter {
@@ -33,7 +43,7 @@ public class PagingMenuView: UIView {
         }
     }
     
-    public var items: [PagingItemProvider]? {
+    public var items: [PagingBarItemProvider]? {
         didSet {
             setupItemViews()
             scrollView.contentOffset = .zero
@@ -79,7 +89,7 @@ public class PagingMenuView: UIView {
         }
     }
     
-    public func updateItem(_ item: PagingItemProvider, at index: Int) {
+    public func updateItem(_ item: PagingBarItemProvider, at index: Int) {
         guard let button = contentView.viewWithTag(index+PagingMenuStartTag) as? UIButton else {
             return
         }
@@ -117,7 +127,11 @@ public class PagingMenuView: UIView {
     }
     
     private func setupItemViews() {
-        contentView.subviews.forEach{ $0.removeFromSuperview() }
+        contentView.subviews.forEach{
+            if $0 != selectedBackgroundView { 
+                $0.removeFromSuperview()
+            }
+        }
         var lastButton: UIButton?
         items?.enumerated().forEach({ index, item in
             let button = UIButton()
@@ -152,7 +166,7 @@ public class PagingMenuView: UIView {
         }
     }
     
-    private func setButtonStyle(button: UIButton, item: PagingItemProvider) {
+    private func setButtonStyle(button: UIButton, item: PagingBarItemProvider) {
         if let normal = normalStyle {
             button.setAttributedTitle(NSAttributedString(string: item.normalAttributedTitle.string, attributes: [.font:normal.font,.foregroundColor:normal.color]), for: .normal)
         } else {
@@ -171,6 +185,7 @@ public class PagingMenuView: UIView {
         }
     }
 
+    private var selectedBackgroundViewConstraints: [NSLayoutConstraint]?
     @discardableResult
     private func selectedButton(button: UIButton) -> Bool {
         if selectedButton === button {
@@ -179,6 +194,18 @@ public class PagingMenuView: UIView {
         selectedButton?.isSelected = false
         button.isSelected = true
         selectedButton = button
+        if let bg = selectedBackgroundView {
+            if let constraints = selectedBackgroundViewConstraints {
+                contentView.removeConstraints(constraints)
+            }
+            selectedBackgroundViewConstraints = [
+                bg.centerXAnchor.constraint(equalTo: button.centerXAnchor),
+                bg.centerYAnchor.constraint(equalTo: button.centerYAnchor),
+                bg.widthAnchor.constraint(equalTo: button.widthAnchor),
+                bg.heightAnchor.constraint(equalTo: button.heightAnchor)
+            ]
+            NSLayoutConstraint.activate(selectedBackgroundViewConstraints!)
+        }
         return true
     }
 
