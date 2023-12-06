@@ -102,23 +102,24 @@ public class PagingBarView: UIView {
     private func setupViews() {
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
+        scrollView.semanticContentAttribute = .forceLeftToRight
         if #available(iOS 11.0, *) {
             scrollView.contentInsetAdjustmentBehavior = .never
         }
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(scrollView)
         NSLayoutConstraint.activate([
-            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            scrollView.leftAnchor.constraint(equalTo: leftAnchor),
+            scrollView.rightAnchor.constraint(equalTo: rightAnchor),
             scrollView.topAnchor.constraint(equalTo: topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
         
         scrollView.addSubview(contentView)
         contentView.translatesAutoresizingMaskIntoConstraints = false
-        leftConstraint = contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor)
+        leftConstraint = contentView.leftAnchor.constraint(equalTo: scrollView.leftAnchor)
         centerConstraint = contentView.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor)
-        rightConstraint = contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor)
+        rightConstraint = contentView.rightAnchor.constraint(equalTo: scrollView.rightAnchor)
 
         NSLayoutConstraint.activate([
             leftConstraint!,
@@ -148,11 +149,11 @@ public class PagingBarView: UIView {
             ])
             if let last = lastButton {
                 NSLayoutConstraint.activate([
-                    button.leadingAnchor.constraint(equalTo: last.trailingAnchor, constant: spacing)
+                    button.leftAnchor.constraint(equalTo: last.rightAnchor, constant: spacing)
                 ])
             } else {
                 NSLayoutConstraint.activate([
-                    button.leadingAnchor.constraint(equalTo: contentView.leadingAnchor)
+                    button.leftAnchor.constraint(equalTo: contentView.leftAnchor)
                 ])
             }
             lastButton = button
@@ -163,7 +164,7 @@ public class PagingBarView: UIView {
         
         if let last = lastButton {
             NSLayoutConstraint.activate([
-                last.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: 0)
+                last.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: 0)
             ])
         }
     }

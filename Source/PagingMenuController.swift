@@ -69,14 +69,15 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
         barView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(barView)
         NSLayoutConstraint.activate([
-            barView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -barInset.right),
-            barView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: barInset.left),
+            barView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -barInset.right),
+            barView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: barInset.left),
             barView.topAnchor.constraint(equalTo: view.topAnchor, constant: barInset.top),
             barView.heightAnchor.constraint(equalToConstant: barHeight)
         ])
 
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
+        scrollView.semanticContentAttribute = .forceLeftToRight
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         if #available(iOS 11.0, *) {
             scrollView.contentInsetAdjustmentBehavior = .never
@@ -87,8 +88,8 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
         scrollView.isPagingEnabled = true
         view.addSubview(scrollView)
         NSLayoutConstraint.activate([
-            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            scrollView.leftAnchor.constraint(equalTo: view.leftAnchor),
             scrollView.topAnchor.constraint(equalTo: barView.bottomAnchor, constant: barInset.bottom),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
@@ -97,17 +98,17 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentWidth = contentView.widthAnchor.constraint(equalTo: view.widthAnchor ,multiplier: CGFloat(items?.1.count ?? 1))
         NSLayoutConstraint.activate([
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.leftAnchor.constraint(equalTo: scrollView.leftAnchor),
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.heightAnchor.constraint(equalTo: scrollView.heightAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.rightAnchor.constraint(equalTo: scrollView.rightAnchor),
             contentWidth!
         ])
         showSelectedViewController(selectedIndex)
-        if UIView.appearance().semanticContentAttribute == .forceRightToLeft {
-            scrollView.transform = CGAffineTransform(scaleX:-1,y: 1)
-            contentView.transform = CGAffineTransform(scaleX:-1,y: 1)
-        }
+//        if UIView.appearance().semanticContentAttribute == .forceRightToLeft {
+//            scrollView.transform = CGAffineTransform(scaleX:-1,y: 1)
+//            contentView.transform = CGAffineTransform(scaleX:-1,y: 1)
+//        }
     }
 
     public func updateItem(_ item: PagingBarItemProvider, at index: Int) {
@@ -133,7 +134,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
             selectedController.pagingContainerItemView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
                 selectedController.pagingContainerItemView.widthAnchor.constraint(equalTo: view.widthAnchor),
-                selectedController.pagingContainerItemView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: width * CGFloat(selectedIndex)),
+                selectedController.pagingContainerItemView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: width * CGFloat(selectedIndex)),
                 selectedController.pagingContainerItemView.topAnchor.constraint(equalTo: contentView.topAnchor),
                 selectedController.pagingContainerItemView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             ])
