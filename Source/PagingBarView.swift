@@ -15,9 +15,14 @@ private let PagingMenuStartTag = 100
 
 public class PagingBarView: UIView {
 
+    public enum Alignment {
+        case leading
+        case center
+    }
     public weak var delegate: PagingBarViewDelegate?
     /// spacing between items.
     public var spacing: CGFloat = 15
+    public var itemWidth: CGFloat = 0
     public var normalStyle:PagingBarItemStyle?
     public var selectedStyle:PagingBarItemStyle?
     /// after setting, the frame is equal to the frame of the currently selected item.
@@ -31,16 +36,17 @@ public class PagingBarView: UIView {
         }
     }
 
-    public var contentCenter = false {
+    public var alignment = Alignment.leading {
         didSet {
-            if contentCenter {
-                leftConstraint?.isActive = false
-                centerConstraint?.isActive = true
-                rightConstraint?.isActive = false
-            } else {
+            switch alignment {
+            case .leading:
                 leftConstraint?.isActive = true
                 centerConstraint?.isActive = false
                 rightConstraint?.isActive = true
+            default:
+                leftConstraint?.isActive = false
+                centerConstraint?.isActive = true
+                rightConstraint?.isActive = false
             }
         }
     }
@@ -147,6 +153,11 @@ public class PagingBarView: UIView {
                 button.topAnchor.constraint(equalTo: contentView.topAnchor),
                 button.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
             ])
+            if itemWidth > 0 {
+                NSLayoutConstraint.activate([
+                    button.widthAnchor.constraint(equalToConstant: itemWidth)
+                ])
+            }
             if let last = lastButton {
                 NSLayoutConstraint.activate([
                     button.leftAnchor.constraint(equalTo: last.rightAnchor, constant: spacing)

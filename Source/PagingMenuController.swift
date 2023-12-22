@@ -19,11 +19,14 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     public weak var deledate: PagingMenuControllerDelegate?
     /// spacing between the bar items. default is 15
     public var barItemSpacing: CGFloat { get { barView.spacing } set { barView.spacing = newValue } }
+    public var barItemWidth: CGFloat { get { barView.itemWidth } set { barView.itemWidth = newValue } }
     public var barInset = UIEdgeInsets.zero
     public var barItemNormalStyle:PagingBarItemStyle? { get { barView.normalStyle } set { barView.normalStyle = newValue } }
     public var barItemSelectedStyle:PagingBarItemStyle? { get { barView.selectedStyle } set { barView.selectedStyle = newValue } }
     /// whether the overall content is centered
-    public var barContentCenter: Bool { get { barView.contentCenter } set { barView.contentCenter = newValue } }
+    public var barAlignment: PagingBarView.Alignment { get { barView.alignment } set { barView.alignment = newValue } }
+    /// default true. if true, bounces past edge of content and back again
+    public var bounces: Bool { get { scrollView.bounces } set { scrollView.bounces = newValue }}
     /// $0.0: can use `PagingBarItemTitle`,`PagingBarItemAttributedTitle`,`String`. You can also use `PagingBarItemProvider` to customize
     /// $0.1: can use `UIViewController`,`UIView`. You can also use `PagingContainerItemProvider` to customize
     public var items: ([PagingBarItemProvider],[PagingContainerItemProvider])? {
