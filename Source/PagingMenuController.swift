@@ -16,7 +16,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     
     /// bar height
     public var barHeight: CGFloat = 44
-    public weak var deledate: PagingMenuControllerDelegate?
+    public weak var delegate: PagingMenuControllerDelegate?
     /// spacing between the bar items. default is 15
     public var barItemSpacing: CGFloat { get { barView.spacing } set { barView.spacing = newValue } }
     public var barItemWidth: CGFloat { get { barView.itemWidth } set { barView.itemWidth = newValue } }
@@ -143,7 +143,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
             ])
 
         }
-        self.deledate?.pagingMenuController(self, didSelectAt: selectedIndex)
+        self.delegate?.pagingMenuController(self, didSelectAt: selectedIndex)
     }
     
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
