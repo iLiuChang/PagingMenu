@@ -53,8 +53,9 @@ public class PagingBarView: UIView {
     
     public var items: [PagingBarItemProvider]? {
         didSet {
-            setupItemViews()
-            scrollView.contentOffset = .zero
+            if resetItemsIfNeeded {
+                setupItemViews()
+            }
         }
     }
     
@@ -71,7 +72,8 @@ public class PagingBarView: UIView {
     private var centerConstraint: NSLayoutConstraint?
     private var leftConstraint: NSLayoutConstraint?
     private var rightConstraint: NSLayoutConstraint?
-
+    private var resetItemsIfNeeded = true
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
@@ -101,7 +103,9 @@ public class PagingBarView: UIView {
         guard let button = contentView.viewWithTag(index+PagingMenuStartTag) as? UIButton else {
             return
         }
+        resetItemsIfNeeded = false
         self.items?[index] = item
+        resetItemsIfNeeded = true
         setButtonStyle(button: button, item: item)
     }
 
