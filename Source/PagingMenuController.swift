@@ -49,7 +49,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
         set {
             barView.setSelectedIndex(newValue, animated: false)
             showSelectedViewController(newValue)
-            scrollView.setContentOffset(CGPoint(x: scrollView.frame.width * CGFloat(newValue), y: 0), animated: false)
+            scrollView.setContentOffset(CGPoint(x: view.frame.width * CGFloat(newValue), y: 0), animated: false)
         }
     }
 
@@ -107,13 +107,14 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
             contentView.rightAnchor.constraint(equalTo: scrollView.rightAnchor),
             contentWidth!
         ])
-        showSelectedViewController(selectedIndex)
-//        if UIView.appearance().semanticContentAttribute == .forceRightToLeft {
-//            scrollView.transform = CGAffineTransform(scaleX:-1,y: 1)
-//            contentView.transform = CGAffineTransform(scaleX:-1,y: 1)
-//        }
     }
 
+    public override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        showSelectedViewController(selectedIndex)
+        scrollView.setContentOffset(CGPoint(x: view.frame.width * CGFloat(selectedIndex), y: 0), animated: false)
+    }
+    
     public func updateItem(_ item: PagingBarItemProvider, at index: Int) {
         barView.updateItem(item, at: index)
     }
@@ -125,7 +126,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     
     private func showSelectedViewController(_ selectedIndex: Int) {
         
-        let width = scrollView.bounds.width
+        let width = view.bounds.width
 
         guard let vcs = items?.1 else {
             return

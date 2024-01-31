@@ -89,7 +89,10 @@ public class PagingBarView: UIView {
             return
         }
         selectedButton(button: button)
-        let visibleRect = CGRect(x: scrollView.contentOffset.x, y: 0, width: scrollView.frame.width, height: scrollView.frame.height)
+        if alignment == .center {
+            return
+        }
+        let visibleRect = CGRect(x: scrollView.contentOffset.x, y: 0, width: frame.width, height: frame.height)
         if !CGRectContainsRect(visibleRect, button.frame) {
             var x = button.frame.maxX-visibleRect.width
             if x < 0 {
