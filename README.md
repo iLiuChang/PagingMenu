@@ -28,12 +28,13 @@ override func viewDidLoad() {
     view.addSubview(pagingMenu.view)
     pagingMenu.view.snp.makeConstraints { make in
         make.left.equalTo(0)
-        make.width.equalTo(PGScreenWidth)
-        make.top.equalTo(PGSafeAreaTop)
+        make.width.equalTo(view)
+        make.top.equalTo(20)
         make.bottom.equalTo(0)
     }
 }
 ```
+
 
 If you want to add a line under the selected title, you can set `barItemSelectedBackgroundView`. Of course, you can also set the background you want through `barItemSelectedBackgroundView`.
 ```swift
@@ -50,10 +51,12 @@ line.snp.makeConstraints { make in
 pagingMenu.barItemSelectedBackgroundView = itemBg
 ```
 
+
 The content of the top bar is on the left by default. If you want to display it in the center, you can set `barAlignment` to `center`.
 ```swift
 pagingMenu.barAlignment = .center
 ```
+
 
 The top bar item supports `String`, `PagingBarItemAttributedTitle`, `PagingBarItemTitle`, and you can also customize it through `PagingBarItemProvider`.
 The container supports `UIViewController`, `UIView`, and you can also customize it through `PagingContainerItemProvider`.
@@ -69,6 +72,7 @@ public protocol PagingContainerItemProvider {
     func removeFromSuper(_ pagingMenuController: PagingMenuController)
 }
 ```
+
 
 ## Installation
 
