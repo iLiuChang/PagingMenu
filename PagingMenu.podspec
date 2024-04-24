@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "PagingMenu"
-  s.version      = "1.5.3"
+  s.version      = "1.6.0"
   s.summary      = "paging menu"
   s.homepage     = "https://github.com/iLiuChang/PagingMenu"
   s.license      = "MIT"
@@ -10,4 +10,5 @@ Pod::Spec.new do |s|
   s.requires_arc = true
   s.swift_version = "5.0"
   s.source_files = "Source/*.{swift}"
+  s.resource_bundles = { 'PagingMenu' => ['PrivacyInfo.xcprivacy'] }
 end
