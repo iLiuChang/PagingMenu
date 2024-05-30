@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "PagingMenu"
-  s.version      = "1.6.0"
+  s.version      = "1.7.0"
   s.summary      = "paging menu"
   s.homepage     = "https://github.com/iLiuChang/PagingMenu"
   s.license      = "MIT"

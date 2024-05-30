@@ -64,7 +64,8 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     private let contentView = UIView()
     private var contentWidth: NSLayoutConstraint?
     private var isPageItemActionScroll = false
-    
+    private var viewWidth: CGFloat = 0
+
     public override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -111,12 +112,20 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
 
     public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        if view.frame.width == viewWidth {
+            return
+        }
         showSelectedViewController(selectedIndex)
         scrollView.setContentOffset(CGPoint(x: view.frame.width * CGFloat(selectedIndex), y: 0), animated: false)
+        viewWidth = view.frame.width
     }
     
     public func updateItem(_ item: PagingBarItemProvider, at index: Int) {
         barView.updateItem(item, at: index)
+    }
+    
+    public func reloadBarStyle() {
+        barView.reloadStyle()
     }
     
     public func pagingBarView(_ pageMenu: PagingBarView, didSelectAt index: Int) {

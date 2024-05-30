@@ -103,7 +103,7 @@ public class PagingBarView: UIView {
     }
     
     public func updateItem(_ item: PagingBarItemProvider, at index: Int) {
-        guard let button = contentView.viewWithTag(index+PagingMenuStartTag) as? UIButton else {
+        guard let button = contentView.viewWithTag(index+PagingMenuStartTag) as? ItemButton else {
             return
         }
         resetItemsIfNeeded = false
@@ -112,6 +112,14 @@ public class PagingBarView: UIView {
         setButtonStyle(button: button, item: item)
     }
 
+    public func reloadStyle() {
+        items?.enumerated().forEach({ index, item in
+            if let button = contentView.viewWithTag(index+PagingMenuStartTag) as? ItemButton {
+                setButtonStyle(button: button, item: item)
+            }
+        })
+    }
+    
     private func setupViews() {
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
@@ -136,6 +144,7 @@ public class PagingBarView: UIView {
 
         NSLayoutConstraint.activate([
             leftConstraint!,
+            rightConstraint!,
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
         ])
@@ -148,9 +157,9 @@ public class PagingBarView: UIView {
                 $0.removeFromSuperview()
             }
         }
-        var lastButton: UIButton?
+        var lastButton: ItemButton?
         items?.enumerated().forEach({ index, item in
-            let button = UIButton()
+            let button = ItemButton()
             button.tag = PagingMenuStartTag+index
             setButtonStyle(button: button, item: item)
             button.translatesAutoresizingMaskIntoConstraints = false
@@ -187,20 +196,54 @@ public class PagingBarView: UIView {
         }
     }
     
-    private func setButtonStyle(button: UIButton, item: PagingBarItemProvider) {
+    private func setButtonStyle(button: ItemButton, item: PagingBarItemProvider) {
+        let normalAttributedTitle = item.normalAttributedTitle
+
         if let normal = normalStyle {
-            button.setAttributedTitle(NSAttributedString(string: item.normalAttributedTitle.string, attributes: [.font:normal.font,.foregroundColor:normal.color]), for: .normal)
+            if normalAttributedTitle is OnlyStringAttributedTitle {
+                button.setAttributedTitle(NSAttributedString(string: normalAttributedTitle.string, attributes: [.font:normal.font,.foregroundColor:normal.color]), for: .normal)
+            } else {
+                button.setAttributedTitle(normalAttributedTitle, for: .normal)
+            }
+
+            if let image = normal.backgroundImage {
+                button.setBackgroundImage(image, for: .normal)
+            }
+            if let insets = normal.contentEdgeInsets {
+                button.setContentEdgeInset(insets, for: .normal)
+            }
+            if let radius = normal.cornerRadius {
+                button.setCornerRadius(radius, for: .normal)
+            }
+
         } else {
-            button.setAttributedTitle(item.normalAttributedTitle, for: .normal)
+            button.setAttributedTitle(normalAttributedTitle, for: .normal)
         }
+        
+        let selectedAttributedTitle = item.selectedAttributedTitle
         if let selected = selectedStyle {
-            button.setAttributedTitle(NSAttributedString(string: item.selectedAttributedTitle.string, attributes: [.font:selected.font,.foregroundColor:selected.color]), for: .selected)
+            if selectedAttributedTitle is OnlyStringAttributedTitle {
+                button.setAttributedTitle(NSAttributedString(string: selectedAttributedTitle.string, attributes: [.font:selected.font,.foregroundColor:selected.color]), for: .selected)
+            } else {
+                button.setAttributedTitle(selectedAttributedTitle, for: .selected)
+            }
+            
+            if let image = selected.backgroundImage {
+                button.setBackgroundImage(image, for: .selected)
+            }
+            if let insets = selected.contentEdgeInsets {
+                button.setContentEdgeInset(insets, for: .selected)
+            }
+            if let radius = selected.cornerRadius {
+                button.setCornerRadius(radius, for: .selected)
+            }
         } else {
-            button.setAttributedTitle(item.selectedAttributedTitle, for: .selected)
+            button.setAttributedTitle(selectedAttributedTitle, for: .selected)
         }
     }
     
     @objc private func selectAction(button: UIButton) {
+        self.setNeedsDisplay()
         if selectedButton(button: button) {
             delegate?.pagingBarView(self, didSelectAt: button.tag-PagingMenuStartTag)
         }
@@ -230,4 +273,42 @@ public class PagingBarView: UIView {
         return true
     }
 
+    class ItemButton: UIButton {
+        
+        var _contentEdgeInsets = [UIControl.State.RawValue:UIEdgeInsets]()
+        func setContentEdgeInset(_ insets: UIEdgeInsets, for state: UIControl.State) {
+            _contentEdgeInsets[state.rawValue] = insets
+            updateContentEdgeInsets()
+        }
+
+        var _cornerRadius = [UIControl.State.RawValue:CGFloat]()
+        func setCornerRadius(_ radius: CGFloat, for state: UIControl.State) {
+            _cornerRadius[state.rawValue] = radius
+            updateCornerRadius()
+        }
+
+        override var isSelected: Bool {
+            didSet {
+                updateContentEdgeInsets()
+                updateCornerRadius()
+            }
+        }
+        
+        func updateContentEdgeInsets() {
+            let value = isSelected ? UIControl.State.selected.rawValue : UIControl.State.normal.rawValue
+            if let inset = _contentEdgeInsets[value], inset != contentEdgeInsets {
+                contentEdgeInsets = inset
+            }
+        }
+        
+        func updateCornerRadius() {
+            let value = isSelected ? UIControl.State.selected.rawValue : UIControl.State.normal.rawValue
+            if let radius = _cornerRadius[value],
+               radius != layer.cornerRadius {
+                layer.masksToBounds = true
+                layer.cornerRadius = radius
+            }
+        }
+
+    }
 }
