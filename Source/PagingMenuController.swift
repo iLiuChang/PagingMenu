@@ -39,7 +39,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
                 contentWidth?.isActive = true
                 scrollView.contentOffset = .zero
             }
-            showSelectedViewController(selectedIndex)
+            showSelectedViewController(0)
         }
     }
     public var selectedIndex: Int {

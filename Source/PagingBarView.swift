@@ -243,7 +243,6 @@ public class PagingBarView: UIView {
     }
     
     @objc private func selectAction(button: UIButton) {
-        self.setNeedsDisplay()
         if selectedButton(button: button) {
             delegate?.pagingBarView(self, didSelectAt: button.tag-PagingMenuStartTag)
         }
