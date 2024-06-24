@@ -43,10 +43,12 @@ public class PagingBarView: UIView {
                 leftConstraint?.isActive = true
                 centerConstraint?.isActive = false
                 rightConstraint?.isActive = true
+                minWidthConstraint?.isActive = true
             default:
                 leftConstraint?.isActive = false
                 centerConstraint?.isActive = true
                 rightConstraint?.isActive = false
+                minWidthConstraint?.isActive = false
             }
         }
     }
@@ -68,10 +70,11 @@ public class PagingBarView: UIView {
     
     private var selectedButton: UIButton?
     private let scrollView = UIScrollView()
-    private let contentView = UIView()
+    private let contentView = ContentView()
     private var centerConstraint: NSLayoutConstraint?
     private var leftConstraint: NSLayoutConstraint?
     private var rightConstraint: NSLayoutConstraint?
+    private var minWidthConstraint: NSLayoutConstraint?
     private var resetItemsIfNeeded = true
     
     public override init(frame: CGRect) {
@@ -123,7 +126,6 @@ public class PagingBarView: UIView {
     private func setupViews() {
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
-        scrollView.semanticContentAttribute = .forceLeftToRight
         if #available(iOS 11.0, *) {
             scrollView.contentInsetAdjustmentBehavior = .never
         }
@@ -138,17 +140,19 @@ public class PagingBarView: UIView {
         
         scrollView.addSubview(contentView)
         contentView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.scrollView = scrollView
+        
         leftConstraint = contentView.leftAnchor.constraint(equalTo: scrollView.leftAnchor)
         centerConstraint = contentView.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor)
         rightConstraint = contentView.rightAnchor.constraint(equalTo: scrollView.rightAnchor)
-
+        minWidthConstraint = contentView.widthAnchor.constraint(greaterThanOrEqualTo: widthAnchor, multiplier: 1)
         NSLayoutConstraint.activate([
             leftConstraint!,
             rightConstraint!,
+            minWidthConstraint!,
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
         ])
-
     }
     
     private func setupItemViews() {
@@ -157,6 +161,8 @@ public class PagingBarView: UIView {
                 $0.removeFromSuperview()
             }
         }
+        contentView.needUpdateStartOffsetX = alignment == .leading
+
         var lastButton: ItemButton?
         items?.enumerated().forEach({ index, item in
             let button = ItemButton()
@@ -176,11 +182,11 @@ public class PagingBarView: UIView {
             }
             if let last = lastButton {
                 NSLayoutConstraint.activate([
-                    button.leftAnchor.constraint(equalTo: last.rightAnchor, constant: spacing)
+                    button.leadingAnchor.constraint(equalTo: last.trailingAnchor, constant: spacing)
                 ])
             } else {
                 NSLayoutConstraint.activate([
-                    button.leftAnchor.constraint(equalTo: contentView.leftAnchor)
+                    button.leadingAnchor.constraint(equalTo: contentView.leadingAnchor)
                 ])
             }
             lastButton = button
@@ -190,8 +196,10 @@ public class PagingBarView: UIView {
         })
         
         if let last = lastButton {
+            let leading = last.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
+            leading.priority = .init(1)
             NSLayoutConstraint.activate([
-                last.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: 0)
+                leading
             ])
         }
     }
@@ -309,5 +317,23 @@ public class PagingBarView: UIView {
             }
         }
 
+    }
+    
+    class ContentView: UIView {
+        weak var scrollView: UIScrollView?
+        var needUpdateStartOffsetX = false
+        override func layoutSubviews() {
+            super.layoutSubviews()
+
+            guard let scrollView = self.scrollView else {
+                return
+            }
+            if needUpdateStartOffsetX && 
+                frame.width > scrollView.frame.width &&
+                scrollView.semanticContentAttribute == .forceRightToLeft {
+                scrollView.contentOffset = CGPoint(x: frame.width-scrollView.frame.width, y: 0)
+                needUpdateStartOffsetX = false
+            }
+        }
     }
 }
