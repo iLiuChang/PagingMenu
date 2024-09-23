@@ -9,6 +9,11 @@ import UIKit
 
 public protocol PagingBarViewDelegate: AnyObject {
     func pagingBarView(_ pageMenu: PagingBarView, didSelectAt index: Int)
+    func pagingBarView(_ pageMenu: PagingBarView, didAddItemView view: UIView, forIndex index: Int)
+}
+
+public extension PagingBarViewDelegate {
+    func pagingBarView(_ pageMenu: PagingBarView, didAddItemView view: UIView, forIndex index: Int) { }
 }
 
 private let PagingMenuStartTag = 100
@@ -166,11 +171,12 @@ public class PagingBarView: UIView {
         var lastButton: ItemButton?
         items?.enumerated().forEach({ index, item in
             let button = ItemButton()
+            contentView.addSubview(button)
+            delegate?.pagingBarView(self, didAddItemView: button, forIndex: index)
             button.tag = PagingMenuStartTag+index
             setButtonStyle(button: button, item: item)
             button.translatesAutoresizingMaskIntoConstraints = false
             button.addTarget(self, action: #selector(selectAction(button:)), for: .touchUpInside)
-            contentView.addSubview(button)
             NSLayoutConstraint.activate([
                 button.topAnchor.constraint(equalTo: contentView.topAnchor),
                 button.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
@@ -208,59 +214,57 @@ public class PagingBarView: UIView {
         let normalAttributedTitle = item.normalAttributedTitle
 
         if let normal = normalStyle {
-            if normalAttributedTitle is OnlyStringAttributedTitle {
-                button.setAttributedTitle(NSAttributedString(string: normalAttributedTitle.string, attributes: [.font:normal.font,.foregroundColor:normal.color]), for: .normal)
-            } else {
-                button.setAttributedTitle(normalAttributedTitle, for: .normal)
-            }
-
-            if let image = normal.backgroundImage {
-                button.setBackgroundImage(image, for: .normal)
-            }
-            if let insets = normal.contentEdgeInsets {
-                button.setContentEdgeInset(insets, for: .normal)
-            }
-            if let radius = normal.cornerRadius {
-                button.setCornerRadius(radius, for: .normal)
-            }
-
+            updateButton(button, style: normal, title: normalAttributedTitle, for: .normal)
         } else {
             button.setAttributedTitle(normalAttributedTitle, for: .normal)
         }
         
         let selectedAttributedTitle = item.selectedAttributedTitle
         if let selected = selectedStyle {
-            if selectedAttributedTitle is OnlyStringAttributedTitle {
-                button.setAttributedTitle(NSAttributedString(string: selectedAttributedTitle.string, attributes: [.font:selected.font,.foregroundColor:selected.color]), for: .selected)
-            } else {
-                button.setAttributedTitle(selectedAttributedTitle, for: .selected)
-            }
-            
-            if let image = selected.backgroundImage {
-                button.setBackgroundImage(image, for: .selected)
-            }
-            if let insets = selected.contentEdgeInsets {
-                button.setContentEdgeInset(insets, for: .selected)
-            }
-            if let radius = selected.cornerRadius {
-                button.setCornerRadius(radius, for: .selected)
-            }
+            updateButton(button, style: selected, title: selectedAttributedTitle, for: .selected)
         } else {
             button.setAttributedTitle(selectedAttributedTitle, for: .selected)
         }
     }
     
-    @objc private func selectAction(button: UIButton) {
-        if selectedButton(button: button) {
-            delegate?.pagingBarView(self, didSelectAt: button.tag-PagingMenuStartTag)
+    private func updateButton(_ button: ItemButton, style: PagingBarItemStyle, title: NSAttributedString, for state: UIControl.State) {
+        if title is OnlyStringAttributedTitle {
+            var atts = [NSAttributedString.Key : Any]()
+            if let font = style.font {
+                atts[.font] = font
+            }
+            if let color = style.color {
+                atts[.foregroundColor] = color
+            }
+            button.setAttributedTitle(NSAttributedString(string: title.string, attributes: atts), for: state)
+        } else {
+            button.setAttributedTitle(title, for: state)
         }
+
+        if let image = style.backgroundImage {
+            button.setBackgroundImage(image, for: state)
+        }
+        if let insets = style.contentEdgeInsets {
+            button.setContentEdgeInset(insets, for: state)
+        }
+        if let radius = style.cornerRadius {
+            button.setCornerRadius(radius, for: state)
+        }
+        if let alpha = style.alpha {
+            button.setAlpha(alpha, for: state)
+        }
+    }
+    
+    @objc private func selectAction(button: UIButton) {
+        selectedButton(button: button)
+        delegate?.pagingBarView(self, didSelectAt: button.tag-PagingMenuStartTag)
     }
 
     private var selectedBackgroundViewConstraints: [NSLayoutConstraint]?
     @discardableResult
-    private func selectedButton(button: UIButton) -> Bool {
+    private func selectedButton(button: UIButton) {
         if selectedButton === button {
-            return false
+            return
         }
         selectedButton?.isSelected = false
         button.isSelected = true
@@ -277,7 +281,6 @@ public class PagingBarView: UIView {
             ]
             NSLayoutConstraint.activate(selectedBackgroundViewConstraints!)
         }
-        return true
     }
 
     class ItemButton: UIButton {
@@ -294,10 +297,24 @@ public class PagingBarView: UIView {
             updateCornerRadius()
         }
 
+        var _alpha = [UIControl.State.RawValue:CGFloat]()
+        func setAlpha(_ alpha: CGFloat, for state: UIControl.State) {
+            _alpha[state.rawValue] = alpha
+            updateAlpha()
+        }
+
+        private var subviewsAlpha: CGFloat = 1 {
+            didSet {
+                imageView?.alpha = subviewsAlpha
+                titleLabel?.alpha = subviewsAlpha
+            }
+        }
+        
         override var isSelected: Bool {
             didSet {
                 updateContentEdgeInsets()
                 updateCornerRadius()
+                updateAlpha()
             }
         }
         
@@ -314,6 +331,13 @@ public class PagingBarView: UIView {
                radius != layer.cornerRadius {
                 layer.masksToBounds = true
                 layer.cornerRadius = radius
+            }
+        }
+
+        func updateAlpha() {
+            let value = isSelected ? UIControl.State.selected.rawValue : UIControl.State.normal.rawValue
+            if let alpha = _alpha[value], alpha != subviewsAlpha {
+                subviewsAlpha = alpha
             }
         }
 

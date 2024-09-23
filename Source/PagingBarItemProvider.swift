@@ -13,15 +13,22 @@ public protocol PagingBarItemProvider {
 }
 
 public struct PagingBarItemStyle {
-    public var color: UIColor
-    public var font: UIFont
+    public var color: UIColor?
+    public var font: UIFont?
     public var backgroundImage: UIImage?
     public var cornerRadius: CGFloat?
     public var contentEdgeInsets: UIEdgeInsets?
-    public init(color: UIColor, font: UIFont) {
+    public var alpha: CGFloat? // The alpha of the UIButton's imageView and titleLabel.
+
+    public init(color: UIColor? = nil, font: UIFont? = nil, backgroundImage: UIImage? = nil, cornerRadius: CGFloat? = nil, contentEdgeInsets: UIEdgeInsets? = nil, alpha: CGFloat? = nil) {
         self.color = color
         self.font = font
+        self.backgroundImage = backgroundImage
+        self.cornerRadius = cornerRadius
+        self.contentEdgeInsets = contentEdgeInsets
+        self.alpha = alpha
     }
+    
 }
 
 public struct PagingBarItemTitle: PagingBarItemProvider {
