@@ -156,7 +156,14 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     }
     
     public func pagingBarView(_ pageMenu: PagingBarView, shouldSelectAt index: Int) -> Bool {
-        delegate?.pagingMenuController(self, shouldSelectAt: index) ?? true
+        if let result = delegate?.pagingMenuController(self, shouldSelectAt: index) {
+            if !result && isScrollEnabled {
+                print("[PagingMenu] Please set `isScrollEnabled` to false.")
+                return true
+            }
+            return result
+        }
+        return true
     }
     
     private func showSelectedViewController(_ selectedIndex: Int) {
