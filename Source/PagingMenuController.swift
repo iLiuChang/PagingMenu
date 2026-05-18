@@ -10,10 +10,13 @@ import UIKit
 public protocol PagingMenuControllerDelegate: AnyObject {
     func pagingMenuController(_ pagingMenuController: PagingMenuController, didSelectAt index: Int, actionBehavior: PagingMenuController.ActionBehavior)
     func pagingMenuController(_ pagingMenuController: PagingMenuController, didAddBarItemView view: UIView, forIndex index: Int)
+    /// This only takes effect when `isScrollEnabled` is false.
+    func pagingMenuController(_ pagingMenuController: PagingMenuController, shouldSelectAt index: Int) -> Bool
 }
 
 public extension PagingMenuControllerDelegate {
     func pagingMenuController(_ pagingMenuController: PagingMenuController, didAddBarItemView view: UIView, forIndex index: Int) { }
+    func pagingMenuController(_ pagingMenuController: PagingMenuController, shouldSelectAt index: Int) -> Bool { true }
 }
 
 public class PagingMenuController: UIViewController, UIScrollViewDelegate, PagingBarViewDelegate {
@@ -36,6 +39,8 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     public var barAlignment: PagingBarView.Alignment { get { barView.alignment } set { barView.alignment = newValue } }
     /// default true. if true, bounces past edge of content and back again
     public var bounces: Bool { get { scrollView.bounces } set { scrollView.bounces = newValue }}
+    /// default true. A Boolean value that determines whether scrolling is enabled.
+    public var isScrollEnabled: Bool { get { scrollView.isScrollEnabled } set { scrollView.isScrollEnabled = newValue }}
     /// $0.0: can use `PagingBarItemTitle`,`PagingBarItemAttributedTitle`,`String`. You can also use `PagingBarItemProvider` to customize
     /// $0.1: can use `UIViewController`,`UIView`. You can also use `PagingContainerItemProvider` to customize
     public var items: ([PagingBarItemProvider],[PagingContainerItemProvider])? {
@@ -148,6 +153,10 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     
     public func pagingBarView(_ pageMenu: PagingBarView, didAddItemView view: UIView, forIndex index: Int) {
         delegate?.pagingMenuController(self, didAddBarItemView: view, forIndex: index)
+    }
+    
+    public func pagingBarView(_ pageMenu: PagingBarView, shouldSelectAt index: Int) -> Bool {
+        delegate?.pagingMenuController(self, shouldSelectAt: index) ?? true
     }
     
     private func showSelectedViewController(_ selectedIndex: Int) {

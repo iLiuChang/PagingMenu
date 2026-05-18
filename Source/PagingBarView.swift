@@ -10,10 +10,12 @@ import UIKit
 public protocol PagingBarViewDelegate: AnyObject {
     func pagingBarView(_ pageMenu: PagingBarView, didSelectAt index: Int)
     func pagingBarView(_ pageMenu: PagingBarView, didAddItemView view: UIView, forIndex index: Int)
+    func pagingBarView(_ pageMenu: PagingBarView, shouldSelectAt index: Int) -> Bool
 }
 
 public extension PagingBarViewDelegate {
     func pagingBarView(_ pageMenu: PagingBarView, didAddItemView view: UIView, forIndex index: Int) { }
+    func pagingBarView(_ pageMenu: PagingBarView, shouldSelectAt index: Int) -> Bool { true }
 }
 
 private let PagingMenuStartTag = 100
@@ -256,12 +258,16 @@ public class PagingBarView: UIView {
     }
     
     @objc private func selectAction(button: UIButton) {
+        let index = button.tag-PagingMenuStartTag
+        if delegate?.pagingBarView(self, shouldSelectAt: index) == false {
+            return
+        }
         selectedButton(button: button)
-        delegate?.pagingBarView(self, didSelectAt: button.tag-PagingMenuStartTag)
+        delegate?.pagingBarView(self, didSelectAt: index)
     }
 
     private var selectedBackgroundViewConstraints: [NSLayoutConstraint]?
-    @discardableResult
+    
     private func selectedButton(button: UIButton) {
         if selectedButton === button {
             return

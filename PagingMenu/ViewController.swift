@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, PagingMenuControllerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,8 +44,9 @@ class ViewController: UIViewController {
         paging.barItemNormalStyle = PagingBarItemStyle(color: .black.withAlphaComponent(0.6), font: UIFont.systemFont(ofSize: 14))
         paging.barItemSelectedStyle = PagingBarItemStyle(color: .black, font: UIFont.systemFont(ofSize: 17))
         paging.barItemSelectedBackgroundView = selectView
-        paging.barContentCenter = true
-
+        paging.delegate = self
+        paging.isScrollEnabled = false
+        
         addChild(paging)
         paging.view.frame = CGRect(x: 0, y: 44, width: view.frame.width, height: view.frame.height-44)
         view.addSubview(paging.view)
@@ -55,6 +56,18 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view.
     }
 
+
+    func pagingMenuController(_ pagingMenuController: PagingMenuController, shouldSelectAt index: Int) -> Bool {
+        if index == 1 {
+            print("111")
+            return false
+        }
+        return true
+    }
+    
+    func pagingMenuController(_ pagingMenuController: PagingMenuController, didSelectAt index: Int, actionBehavior: PagingMenuController.ActionBehavior) {
+        
+    }
 
 }
 
