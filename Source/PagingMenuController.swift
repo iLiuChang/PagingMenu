@@ -45,13 +45,13 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     /// $0.1: can use `UIViewController`,`UIView`. You can also use `PagingContainerItemProvider` to customize
     public var items: ([PagingBarItemProvider],[PagingContainerItemProvider])? {
         didSet {
-            oldValue?.1.forEach({  $0.removeFromSuper(self) })
+            oldValue?.1.forEach({ removeContainerItem($0) })
             barView.items = items?.0
             if let w = contentWidth {
                 NSLayoutConstraint.deactivate([w])
                 contentWidth = contentView.widthAnchor.constraint(equalTo: view.widthAnchor ,multiplier: CGFloat(items?.1.count ?? 1))
                 contentWidth?.isActive = true
-                scrollView.contentOffsetX = 0
+                scrollView.setContentOffsetXAfterContentSizeUpdate(0)
             }
             showSelectedViewController(0)
         }
@@ -64,7 +64,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
             barView.setSelectedIndex(newValue, animated: false)
             showSelectedViewController(newValue)
             if view.frame.width > 0 {
-                scrollView.contentOffsetX = view.frame.width * CGFloat(newValue)
+                scrollView.setContentOffsetXAfterContentSizeUpdate(view.frame.width * CGFloat(newValue))
             }
         }
     }
@@ -84,8 +84,9 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     private let scrollView = PagingScrollView()
     private let contentView = UIView()
     private var contentWidth: NSLayoutConstraint?
+    private var containerItemConstraints = [ObjectIdentifier: [NSLayoutConstraint]]()
+    private var lastLayoutWidth: CGFloat = 0
 
-    private var isLayoutFinished = false
     public override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -108,7 +109,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
         }
         scrollView.delegate = self
         scrollView.isPagingEnabled = true
-        view.addSubview(scrollView)
+        view.insertSubview(scrollView, at: 0)
         NSLayoutConstraint.activate([
             scrollView.rightAnchor.constraint(equalTo: view.rightAnchor),
             scrollView.leftAnchor.constraint(equalTo: view.leftAnchor),
@@ -120,21 +121,24 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentWidth = contentView.widthAnchor.constraint(equalTo: view.widthAnchor ,multiplier: CGFloat(items?.1.count ?? 1))
         NSLayoutConstraint.activate([
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.leftAnchor.constraint(equalTo: scrollView.leftAnchor),
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.heightAnchor.constraint(equalTo: scrollView.heightAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.rightAnchor.constraint(equalTo: scrollView.rightAnchor),
             contentWidth!
         ])
     }
 
     public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        if isLayoutFinished {
-            return
+        if lastLayoutWidth != view.bounds.width {
+            reloadVisibleContainerItems()
+            showSelectedViewController(selectedIndex)
         }
-        scrollView.contentOffsetX = view.frame.width * CGFloat(selectedIndex)
-        isLayoutFinished = true
+        lastLayoutWidth = view.bounds.width
+        if !scrollView.isTracking && !scrollView.isDragging && !scrollView.isDecelerating {
+            scrollView.contentOffsetX = view.frame.width * CGFloat(selectedIndex)
+        }
     }
     
     public func updateItem(_ item: PagingBarItemProvider, at index: Int) {
@@ -174,62 +178,123 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
             return
         }
         
-        if selectedIndex > 0 && width == 0 {
+        if width == 0 {
             return
         }
 
         let selectedController = vcs[selectedIndex]
-        if selectedController.pagingContainerItemView.superview == nil {
+        let itemView = selectedController.pagingContainerItemView
+        if itemView.superview == nil {
             selectedController.addToSuper(contentView, pagingMenuController: self)
-            selectedController.pagingContainerItemView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                selectedController.pagingContainerItemView.widthAnchor.constraint(equalTo: view.widthAnchor),
-                selectedController.pagingContainerItemView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: width * CGFloat(selectedIndex)),
-                selectedController.pagingContainerItemView.topAnchor.constraint(equalTo: contentView.topAnchor),
-                selectedController.pagingContainerItemView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            ])
-
+            itemView.translatesAutoresizingMaskIntoConstraints = false
         }
+        updateContainerItemConstraints(for: itemView, index: selectedIndex, width: width)
+    }
+
+    private func removeContainerItem(_ item: PagingContainerItemProvider) {
+        let itemView = item.pagingContainerItemView
+        if let constraints = containerItemConstraints.removeValue(forKey: ObjectIdentifier(itemView)) {
+            NSLayoutConstraint.deactivate(constraints)
+        }
+        item.removeFromSuper(self)
+    }
+
+    private func updateContainerItemConstraints(for itemView: UIView, index: Int, width: CGFloat) {
+        let key = ObjectIdentifier(itemView)
+        if let constraints = containerItemConstraints.removeValue(forKey: key) {
+            NSLayoutConstraint.deactivate(constraints)
+        }
+        var constraints = [
+            itemView.widthAnchor.constraint(equalTo: view.widthAnchor),
+            itemView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            itemView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+        ]
+        if isRightToLeftLayout {
+            constraints.append(
+                itemView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -width * CGFloat(index))
+            )
+        } else {
+            constraints.append(
+                itemView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: width * CGFloat(index))
+            )
+        }
+        containerItemConstraints[key] = constraints
+        NSLayoutConstraint.activate(constraints)
+    }
+
+    private func reloadVisibleContainerItems() {
+        items?.1
+            .filter { $0.pagingContainerItemView.superview === contentView }
+            .forEach { removeContainerItem($0) }
     }
     
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         let sv = scrollView as! PagingScrollView
-        barView.setSelectedIndex(Int(sv.contentOffsetX/sv.bounds.width), animated: true)
+        barView.setSelectedIndex(currentPageIndex(for: sv), animated: true)
         showSelectedViewController(barView.selectedIndex)
         delegate?.pagingMenuController(self, didSelectAt: barView.selectedIndex, actionBehavior: .scroll)
-
     }
-    
+
+    public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        guard !decelerate, let sv = scrollView as? PagingScrollView else {
+            return
+        }
+        barView.setSelectedIndex(currentPageIndex(for: sv), animated: true)
+        showSelectedViewController(barView.selectedIndex)
+        delegate?.pagingMenuController(self, didSelectAt: barView.selectedIndex, actionBehavior: .scroll)
+    }
+
+    private func currentPageIndex(for scrollView: PagingScrollView) -> Int {
+        let pageWidth = scrollView.bounds.width
+        guard pageWidth > 0 else {
+            return barView.selectedIndex
+        }
+
+        let rawIndex = scrollView.contentOffsetX / pageWidth
+        let roundedIndex = Int(rawIndex.rounded())
+        return pageIndex(roundedIndex)
+    }
+
+    private func pageIndex(_ index: Int) -> Int {
+        let maxIndex = max(0, (items?.1.count ?? 1) - 1)
+        return min(max(index, 0), maxIndex)
+    }
+
+    private var isRightToLeftLayout: Bool {
+        view.effectiveUserInterfaceLayoutDirection == .rightToLeft
+    }
+
     class PagingScrollView: UIScrollView {
         
-        private var needUpdateContentOffsetX: CGFloat?
+        private var pendingContentOffsetX: CGFloat?
         override var contentSize: CGSize {
             didSet {
-                if let offsetX = needUpdateContentOffsetX, contentSize.width > frame.width {
-                    setContentOffsetX(offsetX, animated: false)
-                    needUpdateContentOffsetX = nil
-                }
+                applyPendingContentOffsetXIfPossible()
             }
+        }
+
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            applyPendingContentOffsetXIfPossible()
         }
         
         var contentOffsetX: CGFloat {
             get {
-                if semanticContentAttribute == .forceRightToLeft {
+                if isRightToLeftLayout {
                     return contentSize.width - contentOffset.x - frame.width
                 }
                 return contentOffset.x
             }
             set {
-                needUpdateContentOffsetX = nil
+                pendingContentOffsetX = nil
                 
                 if contentSize.width == 0 {
-                    needUpdateContentOffsetX = newValue
+                    pendingContentOffsetX = newValue
                     return
                 }
 
-                if semanticContentAttribute == .forceRightToLeft &&
-                    contentSize.width < (newValue + frame.width) {
-                    needUpdateContentOffsetX = newValue
+                if contentSize.width < (newValue + frame.width) {
+                    pendingContentOffsetX = newValue
                     return
                 }
                 setContentOffsetX(newValue, animated: false)
@@ -237,13 +302,30 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
         }
 
         func setContentOffsetX(_ x: CGFloat, animated: Bool) {
-            if semanticContentAttribute == .forceRightToLeft {
+            if isRightToLeftLayout {
                 setContentOffset(CGPoint(x: contentSize.width - x - frame.width, y: 0), animated: animated)
             } else {
                 setContentOffset(CGPoint(x: x, y: 0), animated: animated)
             }
         }
+
+        func setContentOffsetXAfterContentSizeUpdate(_ x: CGFloat) {
+            pendingContentOffsetX = x
+            setNeedsLayout()
+        }
+
+        private func applyPendingContentOffsetXIfPossible() {
+            guard let offsetX = pendingContentOffsetX,
+                  frame.width > 0,
+                  contentSize.width >= frame.width else {
+                return
+            }
+            setContentOffsetX(offsetX, animated: false)
+            pendingContentOffsetX = nil
+        }
+
+        private var isRightToLeftLayout: Bool {
+            effectiveUserInterfaceLayoutDirection == .rightToLeft
+        }
     }
 }
-
-
