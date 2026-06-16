@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Combine
 
 public protocol PagingBarViewDelegate: AnyObject {
     func pagingBarView(_ pageMenu: PagingBarView, didSelectAt index: Int)
@@ -85,15 +84,13 @@ public class PagingBarView: UIView {
     }
     
     private var selectedButton: UIButton?
-    private let scrollView = UIScrollView()
+    private let scrollView = RTLScrollView()
     private let contentView = UIView()
     private var centerConstraint: NSLayoutConstraint?
     private var leftConstraint: NSLayoutConstraint?
     private var rightConstraint: NSLayoutConstraint?
     private var minWidthConstraint: NSLayoutConstraint?
     private var resetItemsIfNeeded = true
-    private var needsUpdateStartOffsetX = false
-    private var contentSizeObserver: AnyCancellable?
     
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -103,10 +100,6 @@ public class PagingBarView: UIView {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupViews()
-    }
-
-    deinit {
-        contentSizeObserver?.cancel()
     }
     
     public func setSelectedIndex(_ index: Int, animated: Bool) {
@@ -165,13 +158,6 @@ public class PagingBarView: UIView {
             contentView.heightAnchor.constraint(equalTo: scrollView.heightAnchor)
         ])
 
-        contentSizeObserver = scrollView
-            .publisher(for: \.contentSize)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.updateStartOffsetIfNeeded()
-            }
-
     }
     
     private func setupItemViews() {
@@ -180,7 +166,7 @@ public class PagingBarView: UIView {
                 $0.removeFromSuperview()
             }
         }
-        needsUpdateStartOffsetX = true
+        scrollView.needsUpdateStartOffsetX = true
 
         var lastButton: ItemButton?
         items?.enumerated().forEach({ index, item in
@@ -395,14 +381,26 @@ public class PagingBarView: UIView {
 
     }
     
-    private func updateStartOffsetIfNeeded() {
-        guard needsUpdateStartOffsetX,
-              alignment != .center,
-              scrollView.effectiveUserInterfaceLayoutDirection == .rightToLeft,
-              scrollView.contentSize.width > scrollView.frame.width else {
-            return
+ 
+    
+    class RTLScrollView: UIScrollView {
+        var needsUpdateStartOffsetX = false
+
+        override var contentSize: CGSize {
+            didSet {
+                updateStartOffsetIfNeeded()
+            }
         }
-        scrollView.contentOffset = CGPoint(x: scrollView.contentSize.width - scrollView.frame.width, y: 0)
-        needsUpdateStartOffsetX = false
+        
+        private func updateStartOffsetIfNeeded() {
+            guard needsUpdateStartOffsetX,
+                  effectiveUserInterfaceLayoutDirection == .rightToLeft,
+                  contentSize.width > frame.width else {
+                return
+            }
+            contentOffset = CGPoint(x: contentSize.width - frame.width, y: 0)
+            needsUpdateStartOffsetX = false
+        }
     }
+
 }
