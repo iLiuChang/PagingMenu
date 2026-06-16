@@ -114,17 +114,7 @@ public class PagingBarView: UIView {
             return
         }
         selectedButton(button: button)
-        if alignment == .center {
-            return
-        }
-        let visibleRect = CGRect(x: scrollView.contentOffset.x, y: 0, width: frame.width, height: frame.height)
-        if !CGRectContainsRect(visibleRect, button.frame) {
-            var x = button.frame.maxX-visibleRect.width
-            if x < 0 {
-                x = button.frame.origin.x
-            }
-            scrollView.setContentOffset(CGPoint(x:x, y:0), animated: animated)
-        }
+        checkVisibleButton(button, index: index, animated: animated)
     }
     
     public func updateItem(_ item: PagingBarItemProvider, at index: Int) {
@@ -295,9 +285,33 @@ public class PagingBarView: UIView {
             return
         }
         selectedButton(button: button)
+        checkVisibleButton(button, index: index, animated: true)
         delegate?.pagingBarView(self, didSelectAt: index)
     }
 
+    private func checkVisibleButton(_ button: UIButton, index: Int, animated: Bool) {
+        if alignment == .center {
+            return
+        }
+
+        // Ensure Auto Layout has calculated all frames before reading them.
+        layoutIfNeeded()
+
+        let visibleWidth = scrollView.bounds.width
+        let buttonCenterX = button.frame.midX
+
+        // Scroll so the selected button is centered in the visible area (Toutiao style).
+        var targetX = buttonCenterX - visibleWidth / 2
+
+        // Use the actual last button's right edge to determine the scroll limit,
+        // avoiding floating-point precision issues between contentSize and button frames.
+        let maxContentX = max(contentView.frame.width, scrollView.contentSize.width)
+        let maxOffsetX = max(maxContentX - visibleWidth, 0)
+        targetX = min(max(targetX, 0), maxOffsetX)
+
+        scrollView.setContentOffset(CGPoint(x: targetX, y: 0), animated: animated)
+    }
+    
     private var selectedBackgroundViewConstraints: [NSLayoutConstraint]?
     
     private func selectedButton(button: UIButton) {
