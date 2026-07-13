@@ -10,5 +10,5 @@ Pod::Spec.new do |s|
   s.requires_arc = true
   s.swift_version = "5.0"
   s.source_files = "Source/*.{swift}"
-  s.resource_bundles = { 'PagingMenu' => ['PrivacyInfo.xcprivacy'] }
+  s.resource_bundles = { 'PagingMenu' => ['Sources/PrivacyInfo.xcprivacy'] }
 end
