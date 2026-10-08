@@ -36,10 +36,19 @@ public class PagingBarView: UIView {
     /// after setting, the frame is equal to the frame of the currently selected item.
     public var selectedBackgroundView: UIView? {
         didSet {
-            selectedBackgroundView?.removeFromSuperview()
-            if let bg = selectedBackgroundView {
-                bg.translatesAutoresizingMaskIntoConstraints = false
+            if oldValue !== selectedBackgroundView {
+                oldValue?.removeFromSuperview()
+            }
+            clearSelectedBackgroundViewConstraints()
+            guard let bg = selectedBackgroundView else {
+                return
+            }
+            bg.translatesAutoresizingMaskIntoConstraints = false
+            if bg.superview !== contentView {
                 contentView.insertSubview(bg, at: 0)
+            }
+            if let button = selectedButton {
+                updateSelectedBackgroundViewConstraints(to: button)
             }
         }
     }
@@ -307,18 +316,29 @@ public class PagingBarView: UIView {
         selectedButton?.isSelected = false
         button.isSelected = true
         selectedButton = button
-        if let bg = selectedBackgroundView {
-            if let constraints = selectedBackgroundViewConstraints {
-                contentView.removeConstraints(constraints)
-            }
-            selectedBackgroundViewConstraints = [
-                bg.centerXAnchor.constraint(equalTo: button.centerXAnchor),
-                bg.centerYAnchor.constraint(equalTo: button.centerYAnchor),
-                bg.widthAnchor.constraint(equalTo: button.widthAnchor),
-                bg.heightAnchor.constraint(equalTo: button.heightAnchor)
-            ]
-            NSLayoutConstraint.activate(selectedBackgroundViewConstraints!)
+        updateSelectedBackgroundViewConstraints(to: button)
+    }
+
+    private func clearSelectedBackgroundViewConstraints() {
+        if let constraints = selectedBackgroundViewConstraints {
+            NSLayoutConstraint.deactivate(constraints)
+            selectedBackgroundViewConstraints = nil
         }
+    }
+
+    private func updateSelectedBackgroundViewConstraints(to button: UIButton) {
+        guard let bg = selectedBackgroundView else {
+            return
+        }
+        clearSelectedBackgroundViewConstraints()
+        let constraints = [
+            bg.centerXAnchor.constraint(equalTo: button.centerXAnchor),
+            bg.centerYAnchor.constraint(equalTo: button.centerYAnchor),
+            bg.widthAnchor.constraint(equalTo: button.widthAnchor),
+            bg.heightAnchor.constraint(equalTo: button.heightAnchor)
+        ]
+        selectedBackgroundViewConstraints = constraints
+        NSLayoutConstraint.activate(constraints)
     }
 
     class ItemButton: UIButton {
