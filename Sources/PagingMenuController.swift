@@ -132,7 +132,7 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
     public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         if lastLayoutWidth != view.bounds.width {
-            reloadVisibleContainerItems()
+            updateVisibleContainerItemConstraints()
             showSelectedViewController(selectedIndex)
         }
         lastLayoutWidth = view.bounds.width
@@ -222,10 +222,20 @@ public class PagingMenuController: UIViewController, UIScrollViewDelegate, Pagin
         NSLayoutConstraint.activate(constraints)
     }
 
-    private func reloadVisibleContainerItems() {
-        items?.1
-            .filter { $0.pagingContainerItemView.superview === contentView }
-            .forEach { removeContainerItem($0) }
+    /// Rebuilds layout constraints for already-loaded pages when the width changes (e.g. rotation),
+    /// without removing them from the hierarchy.
+    private func updateVisibleContainerItemConstraints() {
+        let width = view.bounds.width
+        guard width > 0, let containers = items?.1 else {
+            return
+        }
+        for (index, item) in containers.enumerated() {
+            let itemView = item.pagingContainerItemView
+            guard itemView.superview === contentView else {
+                continue
+            }
+            updateContainerItemConstraints(for: itemView, index: index, width: width)
+        }
     }
     
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
