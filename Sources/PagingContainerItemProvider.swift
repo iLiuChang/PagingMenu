@@ -21,12 +21,13 @@ extension UIViewController: PagingContainerItemProvider {
     public func addToSuper(_ superView: UIView, pagingMenuController: PagingMenuController)  {
         pagingMenuController.addChild(self)
         superView.addSubview(view)
-        pagingMenuController.didMove(toParent: self)
+        didMove(toParent: pagingMenuController)
     }
     
     public func removeFromSuper(_ pagingMenuController: PagingMenuController) {
-        removeFromParent()
+        willMove(toParent: nil)
         view.removeFromSuperview()
+        removeFromParent()
     }
 }
 
