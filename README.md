@@ -1,5 +1,6 @@
 # PagingMenu
-A paging menu controller built from other view controllers placed inside a scroll view
+
+A paging menu controller built from other view controllers placed inside a scroll view.
 
 ## Requirements
 
@@ -17,7 +18,7 @@ override func viewDidLoad() {
     pagingMenu.barItemNormalStyle = PagingBarItemStyle(color: .black.withAlphaComponent(0.5), font: UIFont.systemFont(ofSize: 16))
     pagingMenu.barItemSelectedStyle = PagingBarItemStyle(color: .black, font: UIFont.systemFont(ofSize: 16))
     pagingMenu.items = (["Title1", "Title2", "Title3"], [UIViewController(), UIViewController(),UIViewController()])
-    
+
     // items can also be UIView
     // pagingMenu.items = (["Title1", "Title2", "Title3"], [UIView(), UIView(),UIView()])
 
@@ -35,8 +36,8 @@ override func viewDidLoad() {
 }
 ```
 
-
 If you want to add a line under the selected title, you can set `barItemSelectedBackgroundView`. Of course, you can also set the background you want through `barItemSelectedBackgroundView`.
+
 ```swift
 let itemBg = UIView()
 let line = UIView()
@@ -51,15 +52,15 @@ line.snp.makeConstraints { make in
 pagingMenu.barItemSelectedBackgroundView = itemBg
 ```
 
-
 The content of the top bar is on the left by default. If you want to display it in the center, you can set `barAlignment` to `center`.
+
 ```swift
 pagingMenu.barAlignment = .center
 ```
 
-
 The top bar item supports `String`, `PagingBarItemAttributedTitle`, `PagingBarItemTitle`, and you can also customize it through `PagingBarItemProvider`.
 The container supports `UIViewController`, `UIView`, and you can also customize it through `PagingContainerItemProvider`.
+
 ```swift
 public protocol PagingBarItemProvider {
     var normalAttributedTitle: NSAttributedString { get }
@@ -72,7 +73,6 @@ public protocol PagingContainerItemProvider {
     func removeFromSuper(_ pagingMenuController: PagingMenuController)
 }
 ```
-
 
 ## Installation
 
