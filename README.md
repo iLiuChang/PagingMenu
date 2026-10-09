@@ -49,7 +49,7 @@ Or add it to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/iLiuChang/PagingMenu.git", from: "1.9.1")
+    .package(url: "https://github.com/iLiuChang/PagingMenu.git", from: "2.0.0")
 ]
 ```
 
