@@ -289,22 +289,24 @@ public class PagingBarView: UIView {
             return
         }
 
-        // Ensure Auto Layout has calculated all frames before reading them.
-        layoutIfNeeded()
+        DispatchQueue.main.async {
+            // Ensure Auto Layout has calculated all frames before reading them.
+            self.layoutIfNeeded()
 
-        let visibleWidth = scrollView.bounds.width
-        let buttonCenterX = button.frame.midX
+            let visibleWidth = self.scrollView.bounds.width
+            let buttonCenterX = button.frame.midX
 
-        // Scroll so the selected button is centered in the visible area (Toutiao style).
-        var targetX = buttonCenterX - visibleWidth / 2
+            // Scroll so the selected button is centered in the visible area (Toutiao style).
+            var targetX = buttonCenterX - visibleWidth / 2
 
-        // Use the actual last button's right edge to determine the scroll limit,
-        // avoiding floating-point precision issues between contentSize and button frames.
-        let maxContentX = max(contentView.frame.width, scrollView.contentSize.width)
-        let maxOffsetX = max(maxContentX - visibleWidth, 0)
-        targetX = min(max(targetX, 0), maxOffsetX)
+            // Use the actual last button's right edge to determine the scroll limit,
+            // avoiding floating-point precision issues between contentSize and button frames.
+            let maxContentX = max(self.contentView.frame.width, self.scrollView.contentSize.width)
+            let maxOffsetX = max(maxContentX - visibleWidth, 0)
+            targetX = min(max(targetX, 0), maxOffsetX)
 
-        scrollView.setContentOffset(CGPoint(x: targetX, y: 0), animated: animated)
+            self.scrollView.setContentOffset(CGPoint(x: targetX, y: 0), animated: animated)
+        }
     }
     
     private var selectedBackgroundViewConstraints: [NSLayoutConstraint]?
